@@ -20,7 +20,7 @@ const createTodo = (todos, text) => {
     [todoKeys.is_completed]: false,
   };
   todos.push(newTodo);
-  return todos;
+  return newTodo;
 };
 
 const completeTodoById = (todos, todoId) => {
@@ -47,11 +47,12 @@ const formElement = document.querySelector(".form");
 const inputElement = document.querySelector(".input");
 const todosElement = document.querySelector(".todos");
 
-const createTodoElement = (text) => {
+const createTodoElement = (todo) => {
   const todoElement = document.createElement("li");
   todoElement.classList.add("todo");
+  todoElement.dataset.id = todo[todoKeys.id];
   todoElement.innerHTML = `
-    <div class="todo-text">${text}</div>
+    <div class="todo-text">${todo[todoKeys.text]}</div>
     <div class="todo-actions">
         <button class="button-complete button">&#10004;</button>
         <button class="button-delete button">&#10006;</button>
@@ -62,6 +63,32 @@ const createTodoElement = (text) => {
 
 const handleCreateTodo = (todos, text) => {
   const todo = createTodo(todos, text);
-  const todoElement = createTodoElement(todo[todoKeys.text]);
+  const todoElement = createTodoElement(todo);
   todosElement.prepend(todoElement);
 };
+
+formElement.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const text = inputElement.value.trim();
+  if (!text) return;
+
+  handleCreateTodo(todos, text);
+  inputElement.value = "";
+});
+
+todosElement.addEventListener("click", ({ target }) => {
+  const todo = target.closest(".todo");
+  if (!todo) return;
+
+  const todoId = Number(todo.dataset.id);
+
+  if (target.matches(".button-complete")) {
+    completeTodoById(todos, todoId);
+    todo.classList.toggle("completed");
+  }
+
+  if (target.matches(".button-delete")) {
+    deleteTodoById(todos, todoId);
+    todo.remove();
+  }
+});
